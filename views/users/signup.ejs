@@ -18,6 +18,16 @@
             </div>
 
             <div class="mb-3">
+                <label for="role" class="form-label">Role</label>
+                <select name="role" id="role" class="form-select" required>
+                    <option value="">Select Your Role</option>
+                    <option value="admin">Admin</option>
+                    <option value="employee">Employee</option>                    
+                </select>
+                <div class="invalid-feedback">Select Role</div>
+            </div>
+
+            <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
                 <input name="password" id="password" type="password" class="form-control"
                 required>

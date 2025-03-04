@@ -136,6 +136,10 @@ app.get("/transactions", isLoggedIn, async (req, res)=>{
     res.render("./transactions/index.ejs", {allTransactions});
 });
 
+// Include the new verification route in app.js
+const transactionRoutes = require("./routes/transactionVerification.js");
+app.use(transactionRoutes);
+
 //Route to Create New Transaction
 //NEW ROUTE
 app.get("/transactions/new", isLoggedIn, (req, res)=>{
@@ -174,9 +178,17 @@ app.put("/transactions/:id", isLoggedIn, async (req, res)=>{
 });
 
 //Delete Route
-app.delete("/transactions/:id", async (req, res) => {
+// Delete Route (Only Admins)
+app.delete("/transactions/:id", isLoggedIn, async (req, res) => {
     try {
         let { id } = req.params;
+
+        // Check if the logged-in user is an admin
+        if (req.user.role !== "admin") {
+            req.flash("failure", "Unauthorized! Only admins can delete transactions.");
+            return res.redirect("/transactions");
+        }
+
         await TransactionModel.findByIdAndDelete(id);
         req.flash("failure", "Transaction Deleted Successfully."); //Failure is used to show deletion only
         res.redirect("/transactions");
@@ -185,6 +197,7 @@ app.delete("/transactions/:id", async (req, res) => {
         res.status(500).send("Error deleting transaction");
     }
 });
+
 
 // Error Handler for the CREATE ROUTE
 app.use((err, req, res, next)=>{
@@ -215,8 +228,8 @@ app.get("/signup", (req, res)=>{
 app.post("/signup", wrapAsync(
     async(req, res)=>{
         try{
-            let {username, email, password} = req.body;
-        const newUser = new User({email, username});
+            let {username, email, role, password} = req.body;
+        const newUser = new User({email, username, role});
         const registeredUser = await User.register(newUser, password);
         console.log(registeredUser);
         req.flash("success", "Welcome to Instamudra Tally Dashboard!");

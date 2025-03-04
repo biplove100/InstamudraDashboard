@@ -30,7 +30,7 @@ const TransactionSchema = new Schema({
     cardNumber: {
         type: String,
         required: true,
-        match: [/^\d{4}$/, "Card Number should be the last 4 digits"],
+        match: [/^\d{16}$/, "Card Number should be 16 digits"],
     },
     expiry: {
         type: String,
@@ -39,14 +39,18 @@ const TransactionSchema = new Schema({
     },
     cardType: {
         type: String,
-        enum: ["Visa (1.8%)", "HDFC Visa (2.5%)", "MasterCard (2.9%)", "AMEX (2.5%)"],
+        enum: ["Visa (1.8%)", "HDFC Visa (2.5%)", "MasterCard (2.9%)", "AMEX (4.0%)"],
         required: true,
     },
     contributor: {
         type: Schema.Types.ObjectId,
         ref: "User", // Reference to the User model
         required: true,
-    }
+    },
+    verifiedBy: {
+        type: String, // Stores the username of the user who verified the transaction
+        default: null, // Default value is null until someone verifies it
+    },
 });
 
 const TransactionModel = mongoose.model("Transaction", TransactionSchema);
