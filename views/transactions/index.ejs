@@ -24,21 +24,30 @@
 
 <body>
   <div class="container mt-4">
-    <!-- Display Total Amount and Total Fees -->
     <% 
       let totalAmount = 0; 
       let totalFees = 0;
       
       for (let transaction of allTransactions) { 
         let amount = parseFloat(transaction.amount) || 0;
-        let feePercentage = transaction.cardType ? parseFloat(transaction.cardType.match(/\d+(\.\d+)?/)[0]) / 100 : 0;
-        let fee = (amount * feePercentage).toFixed(2);
+        let fee = 0;
+
+        // If transaction type is 'Card Withdraw', use the card's fee percentage
+        if (transaction.transaction === "Card Withdraw") {
+          let feePercentage = transaction.cardType ? parseFloat(transaction.cardType.match(/\d+(\.\d+)?/)[0]) / 100 : 0;
+          fee = (amount * feePercentage).toFixed(2);
+        } 
+        // If transaction type is 'Cash Payment' and amount is >= 100000, apply 0.3% fee
+        else if (transaction.transaction === "Cash Payment" && amount >= 100000) {
+          fee = (amount * 0.003).toFixed(2);
+        }
+        // Otherwise, no fee for other transactions
 
         // Adjust total amount based on transaction type
         if (transaction.transaction === "Bill Payment") {
-          totalAmount -= amount; // Subtract if it's a Bill Payment
+          totalAmount -= amount;
         } else {
-          totalAmount += amount; // Add for all other transactions
+          totalAmount += amount;
         }
 
         totalFees += parseFloat(fee);
@@ -51,14 +60,7 @@
     </div>
 </div>
 
-  
-
   <div class="row">
-    <!-- Button to create a new transaction -->
-    <!-- <form method="GET" action="/transactions/new" class="mt-4">
-      <button class="btn btn-primary mb-3">New Transaction</button>
-    </form> -->
-
     <div class="container mt-3">
       <label for="transactionFilter" class="form-label">Filter by Transaction Type:</label>
       <select id="transactionFilter" class="form-select" onchange="filterTransactions()">
@@ -69,8 +71,27 @@
         <option value="Bank Transfer">Bank Transfer</option>
       </select>
     </div>
-    
 
+    <!--MONTH FILTER-->
+    <div class="container mt-3">
+      <label for="monthFilter" class="form-label">Filter by Month:</label>
+      <select id="monthFilter" class="form-select" onchange="filterByMonth()">
+        <option value="">All Months</option>
+        <option value="01">January</option>
+        <option value="02">February</option>
+        <option value="03">March</option>
+        <option value="04">April</option>
+        <option value="05">May</option>
+        <option value="06">June</option>
+        <option value="07">July</option>
+        <option value="08">August</option>
+        <option value="09">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+      </select>
+    </div>
+    
     <div class="col border rounded-3 p-4 my-4 text-wrap fs-6">
       <table class="table table-striped table-bordered">
         <thead>
@@ -101,20 +122,25 @@
             <td><%= transaction.transaction %></td>
             <td><%= transaction.cardholder %></td>
             <td><%= transaction.expiry %></td>
-            <!-- Placeholder, update dynamically if needed -->
             <td><%= transaction.bank %></td>
             <td><%= transaction.cardNumber %></td>
             <td><%= transaction.cardType %></td>
             <td>₹<%= transaction.amount %></td>
             <td>
-              <% let feePercentage =
-              parseFloat(transaction.cardType.match(/\d+(\.\d+)?/)[0]) / 100;
-              let fee = (transaction.amount * feePercentage).toFixed(2); %> ₹<%=
-              fee %>
+              <% let fee = 0;
+              // Apply fees based on transaction type
+              if (transaction.transaction === "Card Withdraw") {
+                let feePercentage = parseFloat(transaction.cardType.match(/\d+(\.\d+)?/)[0]) / 100;
+                fee = (transaction.amount * feePercentage).toFixed(2);
+              } 
+              // Apply 0.3% fee for 'Cash Payment' transactions with amount >= 100000
+              else if (transaction.transaction === "Cash Payment" && transaction.amount >= 100000) {
+                fee = (transaction.amount * 0.003).toFixed(2);
+              } 
+              // Other transactions have no fees
+              %> ₹<%= fee %>
             </td>
-            <!-- <td>Jane Smith</td> -->
             <td><%= transaction.contributor ? transaction.contributor.username : "Unanimous" %></td>
-
             <td>
               <% if (transaction.verifiedBy) { %>
                   <%= transaction.verifiedBy %>
@@ -124,7 +150,6 @@
                   </form>
               <% } %>
           </td>
-            <!-- Placeholder, update dynamically if needed -->
             <td>
               <a
                 href="/transactions/<%= transaction._id %>/edit"
@@ -150,6 +175,7 @@
     </div>
   </div>
 
+
   <script>
     function filterTransactions() {
       let filterValue = document.getElementById("transactionFilter").value.toLowerCase();
@@ -164,7 +190,22 @@
         }
       });
     }
+
+    function filterByMonth() {
+      let filterValue = document.getElementById("monthFilter").value;
+      let rows = document.querySelectorAll("tbody tr");
+      
+      rows.forEach(row => {
+        let dateCell = row.cells[0].textContent.trim();
+        let transactionMonth = dateCell ? dateCell.split('-')[1] : "";
+        
+        if (filterValue === "" || transactionMonth === filterValue) {
+          row.style.display = "";
+        } else {
+          row.style.display = "none";
+        }
+      });
+    }
   </script>
-  
 
 </body>

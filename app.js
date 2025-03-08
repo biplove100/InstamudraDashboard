@@ -45,22 +45,6 @@ app.listen(8080, ()=>{
 //Importing Transaction Schema 
 const TransactionModel = require('./TransactionSchema.js');
 
-// app.get('/testtransactions', async (req, res)=>{
-//     let sampleTransaction = new TransactionModel({
-//         transaction: "Bank Transfer",
-//         amount: 600000,
-//         date: "2025/02/18",
-//         cardholder: "Suresh",
-//         bank: "BOB",
-//         cardNumber: "3456",
-//         expiry: "07/30",
-//         cardType: "AMEX (2.5%)"
-//     });
-//     await sampleTransaction.save();
-//     console.log("Sample was saved.");
-//     res.send("Successful Testing.");
-// });
-
 
 //MONGOOSE
 const mongoose=require("mongoose");
@@ -207,17 +191,6 @@ app.use((err, req, res, next)=>{
     res.render("error.ejs", {err});
 }); 
  
-
-// //DEMO USER
-// app.get("/demouser", async (req, res)=>{
-//     let fakeUser = new User({
-//         email: "student@gmail.com",
-//         username: "delta-student"
-//     });
-
-//     let registeredUser = await User.register(fakeUser, "helloworld");
-//     res.send(registeredUser);
-// });
 
 //User login & Signup Routes
 //SIGNUP ROUTE
